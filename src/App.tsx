@@ -345,7 +345,7 @@ export default function App() {
   ];
 
   return (
-    <div className="h-screen overflow-hidden bg-white text-[#1A1A1A] font-sans selection:bg-[#1A1A1A] selection:text-white flex flex-col lg:flex-row">
+    <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-white text-[#1A1A1A] font-sans selection:bg-[#1A1A1A] selection:text-white flex flex-col lg:flex-row">
       {/* Mobile Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-[#E5E5E5] flex items-center justify-between px-6 z-30">
         <div className="flex items-center gap-3">
@@ -521,7 +521,7 @@ export default function App() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 h-screen overflow-hidden no-print flex flex-col min-w-0 bg-white">
+      <main className="flex-1 min-h-screen lg:h-screen lg:overflow-hidden no-print flex flex-col min-w-0 bg-white">
         <AnimatePresence mode="wait">
           {showCalculator ? (
             <motion.div
@@ -529,7 +529,7 @@ export default function App() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="flex-1 overflow-y-auto p-6 lg:p-20 w-full no-scrollbar"
+              className="flex-1 overflow-y-auto p-6 pt-24 lg:p-20 w-full no-scrollbar"
             >
               <div className="max-w-4xl mx-auto">
                 <FreelanceCalculator />
@@ -541,7 +541,7 @@ export default function App() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="flex-1 overflow-y-auto p-6 lg:p-20 w-full no-scrollbar"
+              className="flex-1 overflow-y-auto p-6 pt-24 lg:p-20 w-full no-scrollbar"
             >
               <div className="max-w-4xl mx-auto">
                 <header className="mb-12 lg:mb-16 flex flex-col lg:flex-row justify-between items-start gap-8">
@@ -698,18 +698,18 @@ export default function App() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex-1 flex flex-col p-4 sm:p-8 lg:p-16 overflow-hidden max-w-6xl mx-auto w-full"
+              className="flex-1 flex flex-col p-6 pt-24 sm:p-8 lg:p-16 lg:overflow-hidden max-w-6xl mx-auto w-full"
             >
-              <div className="shrink-0 mb-4 sm:mb-8">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 mb-4">
-                  <h2 className="text-5xl sm:text-7xl lg:text-9xl font-black tracking-tighter uppercase leading-[0.8] select-none">
+              <div className="shrink-0 mb-8 sm:mb-12">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:gap-12 mb-6">
+                  <h2 className="text-4xl sm:text-7xl lg:text-9xl font-black tracking-tighter uppercase leading-[0.85] select-none">
                     Studio<br />Control
                   </h2>
-                  <HomeScene className="w-24 h-24 sm:w-40 sm:h-40 lg:w-56 lg:h-56 -mt-2" />
+                  <HomeScene className="w-20 h-20 sm:w-40 sm:h-40 lg:w-56 lg:h-56 -mt-2" />
                 </div>
                 
-                <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
-                  <p className="text-[9px] sm:text-[10px] font-mono text-[#888] uppercase tracking-[0.3em] sm:tracking-[0.4em] max-w-md leading-relaxed select-none">
+                <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6">
+                  <p className="text-[8px] sm:text-[10px] font-mono text-[#888] uppercase tracking-[0.3em] sm:tracking-[0.4em] max-w-md leading-relaxed select-none">
                     High-performance project management<br className="hidden sm:block" />
                     for the modern independent developer.
                   </p>
