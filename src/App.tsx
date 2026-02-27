@@ -137,28 +137,42 @@ export default function App() {
 
   const createProject = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newProject.name.trim()) return;
+    const projectName = newProject.name.trim();
+    if (!projectName) return;
+    
     setIsSubmitting(true);
+    console.log("Attempting to create project:", newProject);
 
     try {
       const res = await fetch('/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newProject)
+        body: JSON.stringify({
+          name: projectName,
+          client_name: newProject.client_name.trim()
+        })
       });
       
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to create project');
+        let errorMessage = 'Failed to create project';
+        try {
+          const errorData = await res.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (parseError) {
+          errorMessage = `Server Error: ${res.status} ${res.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await res.json();
+      console.log("Project created successfully, ID:", data.id);
+      
       await fetchProjects();
       
       const created: Project = { 
         id: Number(data.id), 
-        name: newProject.name, 
-        client_name: newProject.client_name, 
+        name: projectName, 
+        client_name: newProject.client_name.trim(), 
         status: 'active', 
         created_at: new Date().toISOString() 
       };
@@ -167,8 +181,8 @@ export default function App() {
       setNewProject({ name: '', client_name: '' });
       setActiveProject(created);
     } catch (e) {
-      console.error("Failed to create project:", e);
-      alert(e instanceof Error ? e.message : "Failed to create project. Please try again.");
+      console.error("Project creation error:", e);
+      alert(e instanceof Error ? e.message : "An unexpected error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

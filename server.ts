@@ -31,53 +31,58 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Initialize Database
-db.exec(`
-  CREATE TABLE IF NOT EXISTS projects (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    client_name TEXT,
-    status TEXT DEFAULT 'active',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  );
+try {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS projects (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      client_name TEXT,
+      status TEXT DEFAULT 'active',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
 
-  CREATE TABLE IF NOT EXISTS project_sections (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    project_id INTEGER NOT NULL,
-    section_type TEXT NOT NULL,
-    content TEXT,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
-  );
+    CREATE TABLE IF NOT EXISTS project_sections (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      project_id INTEGER NOT NULL,
+      section_type TEXT NOT NULL,
+      content TEXT,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+    );
 
-  CREATE TABLE IF NOT EXISTS project_files (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    project_id INTEGER NOT NULL,
-    section_type TEXT NOT NULL,
-    filename TEXT NOT NULL,
-    original_name TEXT NOT NULL,
-    mime_type TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
-  );
+    CREATE TABLE IF NOT EXISTS project_files (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      project_id INTEGER NOT NULL,
+      section_type TEXT NOT NULL,
+      filename TEXT NOT NULL,
+      original_name TEXT NOT NULL,
+      mime_type TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+    );
 
-  CREATE TABLE IF NOT EXISTS todos (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    project_id INTEGER NOT NULL,
-    task TEXT NOT NULL,
-    status TEXT DEFAULT 'pending',
-    priority TEXT DEFAULT 'medium',
-    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
-  );
+    CREATE TABLE IF NOT EXISTS todos (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      project_id INTEGER NOT NULL,
+      task TEXT NOT NULL,
+      status TEXT DEFAULT 'pending',
+      priority TEXT DEFAULT 'medium',
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+    );
 
-  CREATE TABLE IF NOT EXISTS hours_log (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    project_id INTEGER NOT NULL,
-    date TEXT NOT NULL,
-    duration REAL NOT NULL,
-    description TEXT,
-    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
-  );
-`);
+    CREATE TABLE IF NOT EXISTS hours_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      project_id INTEGER NOT NULL,
+      date TEXT NOT NULL,
+      duration REAL NOT NULL,
+      description TEXT,
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+    );
+  `);
+  console.log("Database tables initialized successfully");
+} catch (err) {
+  console.error("Critical: Database initialization failed:", err);
+}
 
 async function startServer() {
   const app = express();
@@ -97,16 +102,20 @@ async function startServer() {
   });
 
   app.post("/api/projects", (req, res) => {
+    console.log("[POST] /api/projects - Request Body:", req.body);
     try {
       const { name, client_name } = req.body;
-      if (!name) {
+      if (!name || !name.trim()) {
+        console.error("[POST] /api/projects - Missing project name");
         return res.status(400).json({ error: "Project name is required" });
       }
+      
       const info = db.prepare("INSERT INTO projects (name, client_name) VALUES (?, ?)").run(name, client_name);
+      console.log("[POST] /api/projects - Success, ID:", info.lastInsertRowid);
       res.json({ id: Number(info.lastInsertRowid) });
     } catch (e) {
-      console.error("Database error during project creation:", e);
-      res.status(500).json({ error: "Internal server error" });
+      console.error("[POST] /api/projects - Database error:", e);
+      res.status(500).json({ error: e instanceof Error ? e.message : "Internal server error during project creation" });
     }
   });
 
