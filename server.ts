@@ -97,9 +97,17 @@ async function startServer() {
   });
 
   app.post("/api/projects", (req, res) => {
-    const { name, client_name } = req.body;
-    const info = db.prepare("INSERT INTO projects (name, client_name) VALUES (?, ?)").run(name, client_name);
-    res.json({ id: info.lastInsertRowid });
+    try {
+      const { name, client_name } = req.body;
+      if (!name) {
+        return res.status(400).json({ error: "Project name is required" });
+      }
+      const info = db.prepare("INSERT INTO projects (name, client_name) VALUES (?, ?)").run(name, client_name);
+      res.json({ id: Number(info.lastInsertRowid) });
+    } catch (e) {
+      console.error("Database error during project creation:", e);
+      res.status(500).json({ error: "Internal server error" });
+    }
   });
 
   app.patch("/api/projects/:id", (req, res) => {

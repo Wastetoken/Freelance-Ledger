@@ -87,6 +87,7 @@ export default function App() {
   }>({ todos: [], hours: [], sections: [], files: [] });
 
   const [isCreating, setIsCreating] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditingProject, setIsEditingProject] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showCalculator, setShowCalculator] = useState(false);
@@ -136,17 +137,41 @@ export default function App() {
 
   const createProject = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch('/api/projects', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newProject)
-    });
-    const data = await res.json();
-    await fetchProjects();
-    setIsCreating(false);
-    setNewProject({ name: '', client_name: '' });
-    const created = { ...newProject, id: data.id, status: 'active', created_at: new Date().toISOString() };
-    setActiveProject(created as Project);
+    if (!newProject.name.trim()) return;
+    setIsSubmitting(true);
+
+    try {
+      const res = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newProject)
+      });
+      
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to create project');
+      }
+
+      const data = await res.json();
+      await fetchProjects();
+      
+      const created: Project = { 
+        id: Number(data.id), 
+        name: newProject.name, 
+        client_name: newProject.client_name, 
+        status: 'active', 
+        created_at: new Date().toISOString() 
+      };
+      
+      setIsCreating(false);
+      setNewProject({ name: '', client_name: '' });
+      setActiveProject(created);
+    } catch (e) {
+      console.error("Failed to create project:", e);
+      alert(e instanceof Error ? e.message : "Failed to create project. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const updateProject = async (e: React.FormEvent) => {
@@ -812,14 +837,16 @@ export default function App() {
                 <div className="flex gap-4 pt-4">
                   <button 
                     type="submit"
-                    className="flex-1 bg-[#1A1A1A] text-white p-4 text-xs font-bold uppercase tracking-widest hover:bg-black transition-colors"
+                    disabled={isSubmitting}
+                    className="flex-1 bg-[#1A1A1A] text-white p-4 text-xs font-bold uppercase tracking-widest hover:bg-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Create
+                    {isSubmitting ? 'Creating...' : 'Create'}
                   </button>
                   <button 
                     type="button"
+                    disabled={isSubmitting}
                     onClick={() => setIsCreating(false)}
-                    className="flex-1 border border-[#E5E5E5] p-4 text-xs font-bold uppercase tracking-widest hover:bg-[#F5F5F5] transition-colors"
+                    className="flex-1 border border-[#E5E5E5] p-4 text-xs font-bold uppercase tracking-widest hover:bg-[#F5F5F5] transition-colors disabled:opacity-50"
                   >
                     Cancel
                   </button>
